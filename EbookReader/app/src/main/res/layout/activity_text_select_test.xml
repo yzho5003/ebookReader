@@ -14,11 +14,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Char­ter was de­signed by Matthew Carter in 1987 as a body text font that would hold up well on low-res­o­lu­tion out­put de­vices of the day—fax ma­chines and 300 dpi laser printers. While 300 dpi print­ing is long gone, most of to­day’s com­puter dis­plays op­er­ate far be­low 300 dpi. Char­ter, un­sur­pris­ingly, holds up ad­mirably well as a screen font. (Matthew would go on to de­sign the quin­tes­sen­tial screen fonts Ver­dana and Geor­gia for Microsoft.) In 1992, Bit­stream con­tributed Post­Script ver­sions of the ba­sic Char­ter fam­ily to the X Con­sor­tium. These orig­i­nal files are still avail­able and can be freely down­loaded and mod­i­fied. But they can be hard to find. So I tracked them down and con­verted them into a new pack­age of OTFs, TTFs, and webfonts. Why? Be­cause Char­ter is a great font, and eas­ily one of the best free fonts avail­able. So I’m do­ing what I can to put more Char­ter into the world. If your project de­mands a font with­out li­cens­ing re­stric­tions, con­sider it. "
-        android:id="@+id/textView"
+        android:id="@+id/textViewTest"
+        android:textIsSelectable="true"
         android:textSize="19sp"
         android:lineSpacingMultiplier="1.2"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"/>
+
 </RelativeLayout>
