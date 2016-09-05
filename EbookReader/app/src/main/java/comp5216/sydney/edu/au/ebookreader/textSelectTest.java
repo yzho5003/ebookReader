@@ -27,6 +27,7 @@ public class textSelectTest extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text_select_test);
+        
 
         final TextView mTextView = (TextView)findViewById(R.id.textViewTest);
 
