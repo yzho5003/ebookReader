@@ -19,7 +19,7 @@ import android.widget.Toast;
 
 import java.util.Locale;
 
-public class textSelectTest extends AppCompatActivity {
+public class TextSelectTest extends AppCompatActivity {
 
     private static final int TRANSLATE = 1;
 
