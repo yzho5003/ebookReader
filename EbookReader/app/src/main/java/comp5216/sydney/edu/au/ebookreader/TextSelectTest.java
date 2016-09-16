@@ -1,6 +1,6 @@
 package comp5216.sydney.edu.au.ebookreader;
 
-import android.icu.text.BreakIterator;
+//import android.icu.text.BreakIterator;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Spannable;
@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.TextView.BufferType;
 import android.widget.Toast;
 
+import java.text.BreakIterator;
 import java.util.Locale;
 
 public class TextSelectTest extends AppCompatActivity {
@@ -25,7 +26,7 @@ public class TextSelectTest extends AppCompatActivity {
         setContentView(R.layout.activity_text_select_test);
         
         final TextView mTextView = (TextView)findViewById(R.id.textViewTest);
-        
+
         //solution 2, using BreakIterator
         String definition = "Char\u00ADter was de\u00ADsigned by Matthew Carter in 1987 as a body text font that would hold up well on low-res\u00ADo\u00ADlu\u00ADtion out\u00ADput de\u00ADvices of the day—fax ma\u00ADchines and 300 dpi laser printers.\n" +
         "While 300 dpi print\u00ADing is long gone, most of to\u00ADday’s com\u00ADputer dis\u00ADplays op\u00ADer\u00ADate far be\u00ADlow 300 dpi. Char\u00ADter, un\u00ADsur\u00ADpris\u00ADingly, holds up ad\u00ADmirably well as a screen font. (Matthew would go on to de\u00ADsign the quin\u00ADtes\u00ADsen\u00ADtial screen fonts Ver\u00ADdana and Geor\u00ADgia for Microsoft.)\n" +

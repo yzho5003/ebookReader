@@ -20,4 +20,12 @@ public class MainActivity extends AppCompatActivity {
             startActivity(textSelectTest);
         }
     }
+
+    public void readEpub(View view){
+        Intent readEpub = new Intent(MainActivity.this, ReadEpub.class);
+
+        if(readEpub != null){
+            startActivity(readEpub);
+        }
+    }
 }
