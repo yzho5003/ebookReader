@@ -1,6 +1,8 @@
 package comp5216.sydney.edu.au.ebookreader;
 
 import android.content.res.AssetManager;
+import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
@@ -9,12 +11,18 @@ import android.view.ActionMode;
 import android.view.ActionMode.Callback;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.epub.EpubReader;
@@ -22,25 +30,64 @@ import nl.siegmann.epublib.epub.EpubReader;
 
 public class ReadEpub extends AppCompatActivity {
 
+    //static values
     private static final int TRANSLATE = 1;
 
+    //UI varibles
     TextView textview;
     String line;
+    //Tab
+    TabHost host;
+    LinearLayout l1;
+    ListView listView;
+    ListView listView2;
+
+
+    //textselection
+    CharSequence selectedText;
+    String[] separated;
+    private Map<String, String> map;
+    static String testdatastr;
 
     //local db
     private TestAdapter mDbHelper;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_read_epub);
 
+        //TextView
+        textview = (TextView)findViewById(R.id.textview);
+
+        //Tab objects
+        host = (TabHost) findViewById(R.id.tabHost);
+        l1 = (LinearLayout) findViewById(R.id.ghaib);
+        listView = (ListView) findViewById(R.id.list);
+        listView2 = (ListView) findViewById(R.id.list2);
+        //hide tab first
+        host.setup();
+        l1.bringToFront();
+        l1.setVisibility(View.GONE);
+
+        //tab init
+        //Tab 1
+        TabHost.TabSpec spec = host.newTabSpec("Translation");
+        spec.setContent(R.id.tab1);
+        spec.setIndicator("Translation");
+        host.addTab(spec);
+        //Tab 2
+        spec = host.newTabSpec("Wikipedia");
+        spec.setContent(R.id.tab2);
+        spec.setIndicator("Wikipedia");
+        host.addTab(spec);
+
+
         //set up local db
         mDbHelper = new TestAdapter(ReadEpub.this);
         mDbHelper.createDatabase();
 
-        //TextView
-        textview = (TextView)findViewById(R.id.textview);
         //Read the book
         openEpub();
 
@@ -50,7 +97,12 @@ public class ReadEpub extends AppCompatActivity {
             @Override
             public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
                 // Remove the "select all" option
-                menu.clear();
+                menu.add(0, TRANSLATE, 0, "Translate").setIcon(R.mipmap.ic_launcher); //choose any icon
+                // Remove the other options
+                menu.removeItem(android.R.id.selectAll);
+                menu.removeItem(android.R.id.cut);
+                menu.removeItem(android.R.id.copy);
+
                 return true;
             }
 
@@ -60,7 +112,8 @@ public class ReadEpub extends AppCompatActivity {
                 // will be used to generate action buttons for the action mode
 
                 // Here is an example MenuItem
-                mode.setTitle("Test");
+                Toast.makeText(getApplicationContext(), "hellpp", Toast.LENGTH_SHORT).show();
+
                 return true;
             }
 
@@ -68,6 +121,11 @@ public class ReadEpub extends AppCompatActivity {
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 switch (item.getItemId()) {
                     case TRANSLATE:
+
+                        //step 0: show tap
+                        l1.setVisibility(View.VISIBLE);
+
+                        //step 1: get the selected string
                         int min = 0;
                         int max = textview.getText().length();
                         if (textview.isFocused()) {
@@ -77,16 +135,56 @@ public class ReadEpub extends AppCompatActivity {
                             min = Math.max(0, Math.min(selStart, selEnd));
                             max = Math.max(0, Math.max(selStart, selEnd));
                         }
-                        // Perform your definition lookup with the selected text
-                        final CharSequence selectedText = textview.getText().subSequence(min, max);
-                        // Finish and close the ActionMode
-                        Toast.makeText(getApplicationContext(), selectedText, Toast.LENGTH_SHORT).show();
+
+                        selectedText = textview.getText().subSequence(min, max); //this is your desired string
+
+                        //step 3: search for translation
+                        int count=0;
+                        mDbHelper.open();
+                        String CurrentString = selectedText.toString();
+                        separated = CurrentString.split("[,'\". \n\r\t]");
+
+                        new MyAsyncTask().execute("");
                         mode.finish();
+
                         return true;
-                    default:
-                        break;
                 }
                 return false;
+            }
+
+            class MyAsyncTask extends AsyncTask<String, Void, String> {
+
+                @Override
+                protected String doInBackground(String... strings) {
+                    map = new HashMap<String, String>(); // Is "map" k variable mein poora array hai
+                    for (int i = separated.length-1; i>=0 ; i--) {
+                        Cursor testdata = mDbHelper.getTestData(separated[i].trim());
+                        if (testdata.moveToFirst()) {
+                            String upperString = separated[i].substring(0, 1).toUpperCase() + separated[i].substring(1); //for capitilaizing first letter
+                            map.put(upperString, testdata.getString(0));                                                //of word
+                            testdatastr = testdata.getString(0);
+                        } else {
+                            runOnUiThread(new Runnable(){
+
+                                @Override
+                                public void run(){
+                                    Toast.makeText(ReadEpub.this,"Internet Issue",Toast.LENGTH_LONG).show();
+                                    //update ui here
+                                    // display toast here
+                                }
+                            });
+                        }
+                    }
+
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(String s) {
+                    super.onPostExecute(s);
+                    showtranslation(map);
+                    mDbHelper.close();
+                }
             }
 
             @Override
@@ -97,12 +195,20 @@ public class ReadEpub extends AppCompatActivity {
 
         });
 
+        textview.setOnClickListener(new View.OnClickListener()
+        {   @Override
+            public void onClick(View view)
+            {
+                l1.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 
-//    public void onReadClick(View view) {
-//        textview.setText("");
-//        openEpub();
-//    }
+    public void showtranslation(Map<String, String> map) {
+        MyAdapter adapter = new MyAdapter(map);
+        listView.setAdapter(adapter);
+    }
+
 
     //private void readItemsFromFile() {
         /*//retrieve the app's private folder.
