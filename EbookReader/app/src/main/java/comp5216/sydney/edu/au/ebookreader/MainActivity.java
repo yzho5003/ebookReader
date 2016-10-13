@@ -13,14 +13,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
-    public void textSelectionOnClick(View view){
-        Intent textSelectTest = new Intent(MainActivity.this, TextSelectTest.class);
-
-        if(textSelectTest != null){
-            startActivity(textSelectTest);
-        }
-    }
-
     public void readEpub(View view){
         Intent readEpub = new Intent(MainActivity.this, ReadEpub.class);
 

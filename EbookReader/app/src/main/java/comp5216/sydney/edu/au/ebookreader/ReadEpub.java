@@ -1,55 +1,108 @@
 package comp5216.sydney.edu.au.ebookreader;
 
 import android.content.res.AssetManager;
-import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.Spanned;
-import android.text.method.ScrollingMovementMethod;
-import android.view.View;
-import android.webkit.WebView;
-import android.widget.ListView;
-import android.widget.ScrollView;
+import android.view.ActionMode;
+import android.view.ActionMode.Callback;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
 
 import nl.siegmann.epublib.domain.Book;
-import nl.siegmann.epublib.domain.Resource;
-import nl.siegmann.epublib.domain.Spine;
-import nl.siegmann.epublib.domain.SpineReference;
 import nl.siegmann.epublib.epub.EpubReader;
-
 
 
 public class ReadEpub extends AppCompatActivity {
 
+    private static final int TRANSLATE = 1;
+
     TextView textview;
     String line;
+
+    //local db
+    private TestAdapter mDbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_read_epub);
+
+        //set up local db
+        mDbHelper = new TestAdapter(ReadEpub.this);
+        mDbHelper.createDatabase();
+
+        //TextView
         textview = (TextView)findViewById(R.id.textview);
-
-        textview.setMovementMethod(ScrollingMovementMethod.getInstance());
-
-    }
-
-    public void onReadClick(View view) {
-        textview.setText("");
+        //Read the book
         openEpub();
+
+        //TextView onActionMode
+        textview.setCustomSelectionActionModeCallback(new Callback() {
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                // Remove the "select all" option
+                menu.clear();
+                return true;
+            }
+
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                // Called when action mode is first created. The menu supplied
+                // will be used to generate action buttons for the action mode
+
+                // Here is an example MenuItem
+                mode.setTitle("Test");
+                return true;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                switch (item.getItemId()) {
+                    case TRANSLATE:
+                        int min = 0;
+                        int max = textview.getText().length();
+                        if (textview.isFocused()) {
+                            final int selStart = textview.getSelectionStart();
+                            final int selEnd = textview.getSelectionEnd();
+
+                            min = Math.max(0, Math.min(selStart, selEnd));
+                            max = Math.max(0, Math.max(selStart, selEnd));
+                        }
+                        // Perform your definition lookup with the selected text
+                        final CharSequence selectedText = textview.getText().subSequence(min, max);
+                        // Finish and close the ActionMode
+                        Toast.makeText(getApplicationContext(), selectedText, Toast.LENGTH_SHORT).show();
+                        mode.finish();
+                        return true;
+                    default:
+                        break;
+                }
+                return false;
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                // Called when an action mode is about to be exited and
+                // destroyed
+            }
+
+        });
+
     }
+
+//    public void onReadClick(View view) {
+//        textview.setText("");
+//        openEpub();
+//    }
 
     //private void readItemsFromFile() {
         /*//retrieve the app's private folder.
