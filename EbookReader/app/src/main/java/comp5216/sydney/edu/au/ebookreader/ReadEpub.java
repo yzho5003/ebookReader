@@ -2,26 +2,47 @@ package comp5216.sydney.edu.au.ebookreader;
 
 import android.content.res.AssetManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.Spanned;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.ActionMode.Callback;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.memetix.mst.language.Language;
+import com.memetix.mst.translate.Translate;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import nl.siegmann.epublib.domain.Book;
@@ -29,6 +50,13 @@ import nl.siegmann.epublib.epub.EpubReader;
 
 
 public class ReadEpub extends AppCompatActivity {
+
+    //custom fonts
+    Typeface charter;
+    Typeface charterBold;
+    Typeface pingfang;
+    Typeface roboto;
+    Typeface robotoMedium;
 
     //static values
     private static final int TRANSLATE = 1;
@@ -42,11 +70,20 @@ public class ReadEpub extends AppCompatActivity {
     ListView listView;
     ListView listView2;
 
+    //wikipedia
+    String CurrentString;
+
+    ArrayList<String> Title = new ArrayList<String>();
+    ArrayList<Bitmap> Image = new ArrayList<Bitmap>();
+    ArrayList<String> Description = new ArrayList<String>();
+    ArrayList<String> Link = new ArrayList<String>();
+
 
     //textselection
     CharSequence selectedText;
     String[] separated;
     private Map<String, String> map;
+    private HashMap<String, stringHashMap> mappedFiles;
     static String testdatastr;
 
     //local db
@@ -56,10 +93,24 @@ public class ReadEpub extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //Remove title bar
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //Remove notification bar
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //set content view AFTER ABOVE sequence (to avoid crash)
         setContentView(R.layout.activity_read_epub);
+
+        //Custom fonts
+        charter = Typeface.createFromAsset(getAssets(), "Charter Regular.ttf");
+        charterBold = Typeface.createFromAsset(getAssets(), "Charter Bold.ttf");
+        pingfang = Typeface.createFromAsset(getAssets(), "PingFang.ttc");
+        roboto = Typeface.createFromAsset(getAssets(), "Roboto-Regular.ttf");
+        robotoMedium = Typeface.createFromAsset(getAssets(), "Roboto-Medium.ttf");
 
         //TextView
         textview = (TextView)findViewById(R.id.textview);
+        textview.setTypeface(charter);
 
         //Tab objects
         host = (TabHost) findViewById(R.id.tabHost);
@@ -112,8 +163,6 @@ public class ReadEpub extends AppCompatActivity {
                 // will be used to generate action buttons for the action mode
 
                 // Here is an example MenuItem
-                Toast.makeText(getApplicationContext(), "hellpp", Toast.LENGTH_SHORT).show();
-
                 return true;
             }
 
@@ -122,7 +171,7 @@ public class ReadEpub extends AppCompatActivity {
                 switch (item.getItemId()) {
                     case TRANSLATE:
 
-                        //step 0: show tap
+                        //step 0: show tab
                         l1.setVisibility(View.VISIBLE);
 
                         //step 1: get the selected string
@@ -135,13 +184,12 @@ public class ReadEpub extends AppCompatActivity {
                             min = Math.max(0, Math.min(selStart, selEnd));
                             max = Math.max(0, Math.max(selStart, selEnd));
                         }
-
                         selectedText = textview.getText().subSequence(min, max); //this is your desired string
 
                         //step 3: search for translation
                         int count=0;
                         mDbHelper.open();
-                        String CurrentString = selectedText.toString();
+                        CurrentString = selectedText.toString();
                         separated = CurrentString.split("[,'\". \n\r\t]");
 
                         new MyAsyncTask().execute("");
@@ -164,17 +212,117 @@ public class ReadEpub extends AppCompatActivity {
                             map.put(upperString, testdata.getString(0));                                                //of word
                             testdatastr = testdata.getString(0);
                         } else {
-                            runOnUiThread(new Runnable(){
+                            Log.d("translate:", "MicroSoft");
+                            Translate.setClientId("bwefo3820f3uboejnw03");
+                            Translate.setClientSecret("xUamXe4g5uVOAem/vXVb+hfdhdxc7FDbrgTjjucTrIw=");
+                            String translatedText;
+                            try {
+                                translatedText = Translate.execute(separated[i].trim(), Language.AUTO_DETECT, Language.CHINESE_SIMPLIFIED);
+                                String upperString = separated[i].substring(0, 1).toUpperCase() + separated[i].substring(1); //for capitilaizing first letter
+                                map.put(upperString, translatedText);
+                                //Log.w("text", translatedText);
+                            } catch (Exception e) {
+                                translatedText = e.toString();
+                                //Log.w("text", translatedText);
+                            }
+                        }
+//                        else {
+//                            runOnUiThread(new Runnable(){
+//
+//                                @Override
+//                                public void run(){
+//                                    Toast.makeText(ReadEpub.this,"Internet Issue",Toast.LENGTH_LONG).show();
+//                                    //update ui here
+//                                    // display toast here
+//                                }
+//                            });
+//                        }
+                    }
 
-                                @Override
-                                public void run(){
-                                    Toast.makeText(ReadEpub.this,"Internet Issue",Toast.LENGTH_LONG).show();
-                                    //update ui here
-                                    // display toast here
+                    Link.clear();
+                    Title.clear();
+                    Description.clear();
+                    Image.clear();
+
+                    String toSearch = CurrentString;
+                    //   toSearch = "different";
+
+                    String wikiDataUrl = "https://en.wikipedia.org/w/api.php?action=opensearch&search=" + toSearch + "&prop=pageimage&limit=1&namespace=0&format=json";
+                    String wikiImageUrl = "https://en.wikipedia.org/w/api.php?action=query&titles="+ toSearch +"&prop=pageimages&format=json&pithumbsize=100";
+                    try {
+                        HttpClient httpclient = new DefaultHttpClient();
+                        HttpGet httpget = new HttpGet(wikiDataUrl);
+                        HttpResponse response = httpclient.execute(httpget);
+
+                        HttpClient httpclientImg = new DefaultHttpClient();
+                        HttpGet httpgetImg = new HttpGet(wikiImageUrl);
+                        HttpResponse responseImg = httpclientImg.execute(httpgetImg);
+
+                        if (response.getStatusLine().getStatusCode() == 200) {
+                            HttpEntity server_response = response.getEntity();
+                            String data = EntityUtils.toString(server_response);
+                            JSONObject last = new JSONObject("{" + '"' + "data" + '"' + ":" + data + "}");
+                            JSONArray ja = last.getJSONArray("data");
+                            for (int j = 1; j < ja.length(); j++) {
+                                String string = ja.getString(j);
+                                if (j == 1) {
+                                    Title.add(string.substring(2, string.length() - 2));
+                                } else if (j == 2) {
+                                    Description.add(string.substring(2, string.length() - 2));
+                                } else if (j == 3) {
+                                    Link.add(string.substring(2, string.length() - 2));
                                 }
-                            });
+
+                                //Log.d("TAG",string.substring(2,string.length()-2)); // do whatever you want with "string"
+                            }
+                            if (responseImg.getStatusLine().getStatusCode() == 200) {
+                                HttpEntity server_responseImg = responseImg.getEntity();
+                                String dataImg = EntityUtils.toString(server_responseImg);
+                                JSONObject lastImg = new JSONObject(dataImg);
+                                JSONObject jo1 = lastImg.getJSONObject("query");
+                                String result = null;
+                                if (jo1.has("pages")) {
+                                    JSONObject jo2 = jo1.getJSONObject("pages");
+                                    Iterator<String> keys = jo2.keys();
+                                    if (keys.hasNext()) {
+                                        String key = (String) keys.next(); // First key in your json object
+                                        JSONObject jo3 = jo2.getJSONObject(key);
+                                        if (jo3.has("thumbnail")) {
+                                            JSONObject jo4 = jo3.getJSONObject("thumbnail");
+                                            // Log.w("ahahah",jo4.getString("source"));
+                                            result = jo4.getString("source");
+                                        } else {
+                                            result = "https://www.megx.net/net.megx.esa/img/no_photo.png";
+                                        }
+                                    }// yeh itrator ka hai iska koi else nae hai... no confusion
+
+                                } else {
+                                    result = "https://www.megx.net/net.megx.esa/img/no_photo.png";
+                                }
+
+
+                                Bitmap responseString = null;
+
+                                URL newurl = null;
+                                try {
+                                    newurl = new URL(result);
+                                } catch (MalformedURLException e) {
+                                    e.printStackTrace();
+                                }
+                                try {
+                                    responseString = BitmapFactory.decodeStream(newurl.openConnection().getInputStream());
+                                    Image.add(responseString);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
                         }
                     }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    Log.d("title", Title.get(0).toString());
+                    Log.d("description", Description.get(0).toString());
 
                     return null;
                 }
@@ -184,6 +332,12 @@ public class ReadEpub extends AppCompatActivity {
                     super.onPostExecute(s);
                     showtranslation(map);
                     mDbHelper.close();
+
+                    mappedFiles= new HashMap<String, stringHashMap>();
+                    for(int hm=0;hm<Title.size();hm++){
+                        mappedFiles.put(Title.get(hm),new stringHashMap(Title.get(hm),Description.get(hm),Image.get(hm)));
+                    }
+                    showwiki(mappedFiles);
                 }
             }
 
@@ -205,8 +359,13 @@ public class ReadEpub extends AppCompatActivity {
     }
 
     public void showtranslation(Map<String, String> map) {
-        MyAdapter adapter = new MyAdapter(map);
+        MyAdapter adapter = new MyAdapter(map, charterBold);
         listView.setAdapter(adapter);
+    }
+
+    public void showwiki(HashMap<String, stringHashMap> map2) {
+        MyAdapterImage adapter2 = new MyAdapterImage(map2);
+        listView2.setAdapter(adapter2);
     }
 
 
@@ -261,7 +420,7 @@ public class ReadEpub extends AppCompatActivity {
         try {
             data = new String(book.getContents().get(2).getData());
             //data.replaceAll("<img.*?>.*?</img>", "");
-            Spanned result = Html.fromHtml(data);
+            Spanned result = Html.fromHtml(data, Html.FROM_HTML_MODE_COMPACT);
             textview.append(result);
 
 

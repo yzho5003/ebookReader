@@ -2,8 +2,10 @@ package comp5216.sydney.edu.au.ebookreader;
 
 /**
  * Created by jason on 13/10/16.
+ * Used for update the translation tab
  */
 
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +17,12 @@ import java.util.Map;
 
 public class MyAdapter extends BaseAdapter {
     private final ArrayList mData;
+    private Typeface charter;
 
-    public MyAdapter(Map<String, String> map) {
+    public MyAdapter(Map<String, String> map, Typeface wordFont) {
         mData = new ArrayList();
         mData.addAll(map.entrySet());
+        charter = wordFont;
     }
 
     @Override
@@ -51,6 +55,7 @@ public class MyAdapter extends BaseAdapter {
 
         // TODO replace findViewById by ViewHolder
         ((TextView) result.findViewById(android.R.id.text1)).setText(item.getKey());
+        ((TextView) result.findViewById(android.R.id.text1)).setTypeface(charter);
         ((TextView) result.findViewById(android.R.id.text2)).setText(item.getValue());
 
         return result;

@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 24
     buildToolsVersion "24.0.1"
     defaultConfig {
         applicationId "comp5216.sydney.edu.au.ebookreader"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
@@ -27,5 +27,8 @@ dependencies {
     compile 'com.github.satyan:sugar:1.4'
     compile files('libs/epublib-core-latest.jar')
     compile files('libs/slf4j-android-1.6.1-RC1.jar')
+    compile files('libs/httpclient-4.2.5.jar')
+    compile files('libs/httpcore-4.2.4.jar')
+    compile files('libs/microsoft-translator-java-api-0.6.1-jar-with-dependencies.jar')
 }
 
