@@ -205,7 +205,7 @@ public class ReadEpub extends AppCompatActivity {
                         mDbHelper.open();
                         CurrentString = selectedText.toString();
                         separated = CurrentString.split("[,'\". \n\r\t]");
-
+                        new Thread(new Task()).start();
                         new MyAsyncTask().execute("");
                         mode.finish();
 
@@ -215,7 +215,6 @@ public class ReadEpub extends AppCompatActivity {
             }
 
             class MyAsyncTask extends AsyncTask<String, Void, String> {
-
                 @Override
                 protected String doInBackground(String... strings) {
                     map = new HashMap<String, String>(); // Is "map" k variable mein poora array hai
@@ -252,92 +251,6 @@ public class ReadEpub extends AppCompatActivity {
 //                            });
 //                        }
                     }
-
-                    Link.clear();
-                    Title.clear();
-                    Description.clear();
-                    Image.clear();
-
-                    String toSearch = CurrentString;
-                    //   toSearch = "different";
-
-                    String wikiDataUrl = "https://en.wikipedia.org/w/api.php?action=opensearch&search=" + toSearch + "&prop=pageimage&limit=1&namespace=0&format=json";
-                    String wikiImageUrl = "https://en.wikipedia.org/w/api.php?action=query&titles="+ toSearch +"&prop=pageimages&format=json&pithumbsize=100";
-                    try {
-                        HttpClient httpclient = new DefaultHttpClient();
-                        HttpGet httpget = new HttpGet(wikiDataUrl);
-                        HttpResponse response = httpclient.execute(httpget);
-
-                        HttpClient httpclientImg = new DefaultHttpClient();
-                        HttpGet httpgetImg = new HttpGet(wikiImageUrl);
-                        HttpResponse responseImg = httpclientImg.execute(httpgetImg);
-
-                        if (response.getStatusLine().getStatusCode() == 200) {
-                            HttpEntity server_response = response.getEntity();
-                            String data = EntityUtils.toString(server_response);
-                            JSONObject last = new JSONObject("{" + '"' + "data" + '"' + ":" + data + "}");
-                            JSONArray ja = last.getJSONArray("data");
-                            for (int j = 1; j < ja.length(); j++) {
-                                String string = ja.getString(j);
-                                if (j == 1) {
-                                    Title.add(string.substring(2, string.length() - 2));
-                                } else if (j == 2) {
-                                    Description.add(string.substring(2, string.length() - 2));
-                                } else if (j == 3) {
-                                    Link.add(string.substring(2, string.length() - 2));
-                                }
-
-                                //Log.d("TAG",string.substring(2,string.length()-2)); // do whatever you want with "string"
-                            }
-                            if (responseImg.getStatusLine().getStatusCode() == 200) {
-                                HttpEntity server_responseImg = responseImg.getEntity();
-                                String dataImg = EntityUtils.toString(server_responseImg);
-                                JSONObject lastImg = new JSONObject(dataImg);
-                                JSONObject jo1 = lastImg.getJSONObject("query");
-                                String result = null;
-                                if (jo1.has("pages")) {
-                                    JSONObject jo2 = jo1.getJSONObject("pages");
-                                    Iterator<String> keys = jo2.keys();
-                                    if (keys.hasNext()) {
-                                        String key = (String) keys.next(); // First key in your json object
-                                        JSONObject jo3 = jo2.getJSONObject(key);
-                                        if (jo3.has("thumbnail")) {
-                                            JSONObject jo4 = jo3.getJSONObject("thumbnail");
-                                            // Log.w("ahahah",jo4.getString("source"));
-                                            result = jo4.getString("source");
-                                        } else {
-                                            result = "https://www.megx.net/net.megx.esa/img/no_photo.png";
-                                        }
-                                    }// yeh itrator ka hai iska koi else nae hai... no confusion
-
-                                } else {
-                                    result = "https://www.megx.net/net.megx.esa/img/no_photo.png";
-                                }
-
-
-                                Bitmap responseString = null;
-
-                                URL newurl = null;
-                                try {
-                                    newurl = new URL(result);
-                                } catch (MalformedURLException e) {
-                                    e.printStackTrace();
-                                }
-                                try {
-                                    responseString = BitmapFactory.decodeStream(newurl.openConnection().getInputStream());
-                                    Image.add(responseString);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    Log.d("title", Title.get(0).toString());
-                    Log.d("description", Description.get(0).toString());
-
                     return null;
                 }
 
@@ -362,11 +275,7 @@ public class ReadEpub extends AppCompatActivity {
                     showtranslation(map);
                     mDbHelper.close();
 
-                    mappedFiles= new HashMap<String, stringHashMap>();
-                    for(int hm=0;hm<Title.size();hm++){
-                        mappedFiles.put(Title.get(hm),new stringHashMap(Title.get(hm),Description.get(hm),Image.get(hm)));
-                    }
-                    showwiki(mappedFiles);
+
                 }
             }
 
@@ -395,6 +304,113 @@ public class ReadEpub extends AppCompatActivity {
     public void showwiki(HashMap<String, stringHashMap> map2) {
         MyAdapterImage adapter2 = new MyAdapterImage(map2);
         listView2.setAdapter(adapter2);
+    }
+
+
+    class RequestTask extends AsyncTask<String[], Void, String[]> {
+
+        @Override
+        protected String[] doInBackground(String[]... passing) {
+            Link.clear();
+            Title.clear();
+            Description.clear();
+            Image.clear();
+
+            String toSearch = CurrentString;
+            //   toSearch = "different";
+
+            String wikiDataUrl = "https://en.wikipedia.org/w/api.php?action=opensearch&search=" + toSearch + "&prop=pageimage&limit=1&namespace=0&format=json";
+            String wikiImageUrl = "https://en.wikipedia.org/w/api.php?action=query&titles=" + toSearch + "&prop=pageimages&format=json&pithumbsize=100";
+            try {
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpGet httpget = new HttpGet(wikiDataUrl);
+                HttpResponse response = httpclient.execute(httpget);
+
+                HttpClient httpclientImg = new DefaultHttpClient();
+                HttpGet httpgetImg = new HttpGet(wikiImageUrl);
+                HttpResponse responseImg = httpclientImg.execute(httpgetImg);
+
+                if (response.getStatusLine().getStatusCode() == 200) {
+                    HttpEntity server_response = response.getEntity();
+                    String data = EntityUtils.toString(server_response);
+                    JSONObject last = new JSONObject("{" + '"' + "data" + '"' + ":" + data + "}");
+                    JSONArray ja = last.getJSONArray("data");
+                    for (int j = 1; j < ja.length(); j++) {
+                        String string = ja.getString(j);
+                        if (j == 1) {
+                            Title.add(string.substring(2, string.length() - 2));
+                        } else if (j == 2) {
+                            Description.add(string.substring(2, string.length() - 2));
+                        } else if (j == 3) {
+                            Link.add(string.substring(2, string.length() - 2));
+                        }
+
+                        //Log.d("TAG",string.substring(2,string.length()-2)); // do whatever you want with "string"
+                    }
+                    if (responseImg.getStatusLine().getStatusCode() == 200) {
+                        HttpEntity server_responseImg = responseImg.getEntity();
+                        String dataImg = EntityUtils.toString(server_responseImg);
+                        JSONObject lastImg = new JSONObject(dataImg);
+                        JSONObject jo1 = lastImg.getJSONObject("query");
+                        String result = null;
+                        if (jo1.has("pages")) {
+                            JSONObject jo2 = jo1.getJSONObject("pages");
+                            Iterator<String> keys = jo2.keys();
+                            if (keys.hasNext()) {
+                                String key = (String) keys.next(); // First key in your json object
+                                JSONObject jo3 = jo2.getJSONObject(key);
+                                if (jo3.has("thumbnail")) {
+                                    JSONObject jo4 = jo3.getJSONObject("thumbnail");
+                                    // Log.w("ahahah",jo4.getString("source"));
+                                    result = jo4.getString("source");
+                                } else {
+                                    result = "https://www.megx.net/net.megx.esa/img/no_photo.png";
+                                }
+                            }// yeh itrator ka hai iska koi else nae hai... no confusion
+
+                        } else {
+                            result = "https://www.megx.net/net.megx.esa/img/no_photo.png";
+                        }
+
+
+                        Bitmap responseString = null;
+
+                        URL newurl = null;
+                        try {
+                            newurl = new URL(result);
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            responseString = BitmapFactory.decodeStream(newurl.openConnection().getInputStream());
+                            Image.add(responseString);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            Log.d("title", Title.get(0).toString());
+            Log.d("description", Description.get(0).toString());
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String[] result) {
+            super.onPostExecute(result);
+            mappedFiles = new HashMap<String, stringHashMap>();
+            for (int hm = 0; hm < Title.size(); hm++) {
+                mappedFiles.put(Title.get(hm), new stringHashMap(Title.get(hm), Description.get(hm), Image.get(hm)));
+            }
+            showwiki(mappedFiles);
+            Log.w("Title", String.valueOf(Title.size()));
+            Log.w("Images", String.valueOf(Image.size()));
+            Log.w("Description", String.valueOf(Description.size()));
+            Log.w("Link", String.valueOf(Link.size()));
+            //Do anything with response..
+        }
     }
 
 
@@ -443,22 +459,23 @@ public class ReadEpub extends AppCompatActivity {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
-        //String baseUrl = Environment.getExternalStorageDirectory().getPath() + "/";
         String data=null;
         try {
             data = new String(book.getContents().get(2).getData());
-            //data.replaceAll("<img.*?>.*?</img>", "");
             Spanned result = Html.fromHtml(data, Html.FROM_HTML_MODE_COMPACT);
             textview.append(result);
 
 
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        //webview.loadDataWithBaseURL(baseUrl, data, "text/html", "UTF-8", null);
+    }
 
+    class Task implements Runnable {
+        @Override
+        public void run() {
+            new RequestTask().execute(separated);
+        }
     }
 }
 
