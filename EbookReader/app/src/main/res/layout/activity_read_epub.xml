@@ -15,7 +15,6 @@
         android:lineSpacingMultiplier="1.2"
         android:id="@+id/textview"
         android:layout_alignParentTop="true"
-        android:layout_above="@+id/button"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentLeft="true"
