@@ -30,7 +30,7 @@ public class CustomSwipeAdapter extends PagerAdapter {
 
 
     static String [] stringPath;
-    static String [] fileName;
+    static String [] fileName = {"Book 1", "Book 2"};
     static String [] textPath;
 
     private Context ctx;

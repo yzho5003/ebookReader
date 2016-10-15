@@ -1,5 +1,6 @@
 package comp5216.sydney.edu.au.ebookreader;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +20,9 @@ public class Books extends AppCompatActivity {
     float y1, y2;
     static final int MIN_DISTANCE = 200;
 
+    //book info
+    static int pos=0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +40,7 @@ public class Books extends AppCompatActivity {
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
 
             public void onPageSelected(int position) {
+                pos = position;
             }
         });
 
@@ -74,14 +79,13 @@ public class Books extends AppCompatActivity {
                             }
 
                             //if Down to UP sweep event on screen
-                            //sensitivity zada ki hai +100 karke//
                             if (y1 > y2 + 100) {
                                 downtoupswipe();
                             }
                             if(x1==x2 && y1==y2){
-//                                pos =viewPager.getCurrentItem();
+                                pos =viewPager.getCurrentItem();
 //                                readTextFile(CustomSwipeAdapter.textPath[pos]);
-//                                launchPdfToText();
+                                launchPdfToText();
                             }
                         }
 
@@ -90,17 +94,20 @@ public class Books extends AppCompatActivity {
                     }
                 }
                 return false;
-
-
             }
         });
     }
 
     public void downtoupswipe() {
-//        Intent intent = new Intent(Books.this, ReadingDetails.class);
-//        intent.putExtra("bookName", CustomSwipeAdapter.fileName[pos] );
-//        startActivity(intent);
-//        overridePendingTransition( R.anim.slide_in_bottom,R.anim.slide);
+        Intent intent = new Intent(Books.this, ReadingDetails.class);
+        intent.putExtra("bookName", CustomSwipeAdapter.fileName[pos] );
+        startActivity(intent);
+        overridePendingTransition( R.anim.slide_in_bottom,R.anim.slide);
+    }
+
+    public void launchPdfToText(){
+        Intent i = new Intent(Books.this,ReadEpub.class);
+        startActivity(i);
     }
 
 

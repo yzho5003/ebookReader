@@ -1,5 +1,6 @@
 package comp5216.sydney.edu.au.ebookreader;
 
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -7,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.text.Spanned;
@@ -78,6 +80,10 @@ public class ReadEpub extends AppCompatActivity {
     ArrayList<String> Description = new ArrayList<String>();
     ArrayList<String> Link = new ArrayList<String>();
 
+    //vocab library
+    static Map<String, String> vocab;
+    SharedPreferences pref;
+    SharedPreferences preferences;
 
     //textselection
     CharSequence selectedText;
@@ -88,6 +94,9 @@ public class ReadEpub extends AppCompatActivity {
 
     //local db
     private TestAdapter mDbHelper;
+
+    //book info
+    static int pos=0;
 
 
     @Override
@@ -141,6 +150,11 @@ public class ReadEpub extends AppCompatActivity {
 
         //Read the book
         openEpub();
+
+        //init vocab library
+        vocab = new HashMap<String, String>();
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        pref = this.getSharedPreferences(CustomSwipeAdapter.fileName[Books.pos]+"451words", this.MODE_PRIVATE);
 
         //TextView onActionMode
         textview.setCustomSelectionActionModeCallback(new Callback() {
@@ -330,6 +344,21 @@ public class ReadEpub extends AppCompatActivity {
                 @Override
                 protected void onPostExecute(String s) {
                     super.onPostExecute(s);
+
+                    vocab= new HashMap<String, String>();
+                    pref = getSharedPreferences(CustomSwipeAdapter.fileName[Books.pos]+"451words", 0);
+                    for( Map.Entry entry : pref.getAll().entrySet() ) {
+                        vocab.put(entry.getKey().toString(),entry.getValue().toString());
+
+                    }
+                    vocab.putAll(map);
+
+                    SharedPreferences.Editor editor = pref.edit();
+                    for (String ss : vocab.keySet()) {
+                        editor.putString(ss, vocab.get(ss));
+                    }
+                    editor.commit();
+
                     showtranslation(map);
                     mDbHelper.close();
 
