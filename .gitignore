@@ -54,3 +54,4 @@ captures/
 
 ### Android Patch ###
 gen-external-apklibs
+.DS_Store
