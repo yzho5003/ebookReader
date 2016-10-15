@@ -162,12 +162,13 @@ public class ReadEpub extends AppCompatActivity {
             @Override
             public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
                 // Remove the "select all" option
-                menu.add(0, TRANSLATE, 0, "Translate").setIcon(R.mipmap.ic_launcher); //choose any icon
+//                menu.add(0, TRANSLATE, 0, "Translate");
                 // Remove the other options
-                menu.removeItem(android.R.id.selectAll);
-                menu.removeItem(android.R.id.cut);
-                menu.removeItem(android.R.id.copy);
-
+//                menu.removeItem(android.R.id.selectAll);
+//                menu.removeItem(android.R.id.cut);
+//                menu.removeItem(android.R.id.copy);
+                menu.clear();
+                menu.add(0, TRANSLATE, 0, "Translate");
                 return true;
             }
 
@@ -177,6 +178,7 @@ public class ReadEpub extends AppCompatActivity {
                 // will be used to generate action buttons for the action mode
 
                 // Here is an example MenuItem
+
                 return true;
             }
 
@@ -462,7 +464,13 @@ public class ReadEpub extends AppCompatActivity {
         String data=null;
         try {
             data = new String(book.getContents().get(2).getData());
-            Spanned result = Html.fromHtml(data, Html.FROM_HTML_MODE_COMPACT);
+            Spanned result;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                result = Html.fromHtml(data, Html.FROM_HTML_MODE_COMPACT);
+            } else {
+                result = Html.fromHtml(data);
+            }
+
             textview.append(result);
 
 
