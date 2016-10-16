@@ -9,6 +9,10 @@ import android.view.View;
 
 import com.ToxicBakery.viewpager.transforms.ZoomOutSlideTransformer;
 
+/**
+ * Created by jason on 14/10/16.
+ */
+
 public class Books extends AppCompatActivity {
 
     //UI variables

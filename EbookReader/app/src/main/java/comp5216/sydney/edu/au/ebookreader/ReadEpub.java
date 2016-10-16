@@ -50,13 +50,15 @@ import java.util.Map;
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.epub.EpubReader;
 
+/**
+ * Created by jason on 14/10/16.
+ */
 
 public class ReadEpub extends AppCompatActivity {
 
     //custom fonts
     Typeface charter;
     Typeface charterBold;
-    Typeface pingfang;
     Typeface roboto;
     Typeface robotoMedium;
 
@@ -113,7 +115,6 @@ public class ReadEpub extends AppCompatActivity {
         //Custom fonts
         charter = Typeface.createFromAsset(getAssets(), "Charter Regular.ttf");
         charterBold = Typeface.createFromAsset(getAssets(), "Charter Bold.ttf");
-        pingfang = Typeface.createFromAsset(getAssets(), "PingFang.ttc");
         roboto = Typeface.createFromAsset(getAssets(), "Roboto-Regular.ttf");
         robotoMedium = Typeface.createFromAsset(getAssets(), "Roboto-Medium.ttf");
 

@@ -10,6 +10,10 @@ import android.widget.ListView;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Created by jason
+ */
+
 public class ReadingDetails extends AppCompatActivity {
 
     //vocab data

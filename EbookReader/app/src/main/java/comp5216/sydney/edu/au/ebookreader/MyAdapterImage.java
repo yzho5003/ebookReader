@@ -1,6 +1,10 @@
 package comp5216.sydney.edu.au.ebookreader;
 
 
+/**
+ * Created by jason on 1/10/16.
+ */
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;

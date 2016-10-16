@@ -33,6 +33,10 @@ import java.io.InputStream;
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.epub.EpubReader;
 
+/**
+ * Created by jason on 6/9/16.
+ */
+
 public class MainActivity extends AppCompatActivity {
     TextView text;
     ImageView imageView;

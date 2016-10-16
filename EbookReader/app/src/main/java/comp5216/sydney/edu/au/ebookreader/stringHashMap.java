@@ -2,6 +2,9 @@ package comp5216.sydney.edu.au.ebookreader;
 
 import android.graphics.Bitmap;
 
+/**
+ * Created by jason.
+ */
 
 public class stringHashMap {
 
