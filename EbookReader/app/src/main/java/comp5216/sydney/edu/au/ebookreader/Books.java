@@ -1,13 +1,33 @@
 package comp5216.sydney.edu.au.ebookreader;
 
+import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
+import android.text.Spanned;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.ToxicBakery.viewpager.transforms.ZoomOutSlideTransformer;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+
+import nl.siegmann.epublib.domain.Book;
+import nl.siegmann.epublib.epub.EpubReader;
 
 /**
  * Created by jason on 14/10/16.
@@ -18,6 +38,8 @@ public class Books extends AppCompatActivity {
     //UI variables
     ViewPager viewPager;
     CustomSwipeAdapter adapter;
+    Button button;
+    static String path;
 
     //swipe geature
     float x1, x2;
@@ -31,11 +53,13 @@ public class Books extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_books);
+        path = null;
 
         //init viewpager
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         adapter = new CustomSwipeAdapter(this);
         viewPager.setAdapter(adapter);
+        button = (Button) findViewById(R.id.button);
 
         //animation
         viewPager.setPageTransformer(true, new ZoomOutSlideTransformer());
@@ -114,5 +138,51 @@ public class Books extends AppCompatActivity {
         startActivity(i);
     }
 
+    public void onClick(View view) {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent,1);
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+
+            switch (requestCode) {
+
+                case 1:
+                    Uri uri = data.getData();
+                    final String id = DocumentsContract.getDocumentId(uri);
+                    final Uri contentUri = ContentUris.withAppendedId(
+                            Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+                    path = getDataColumn(this, contentUri, null, null);
+                    Intent intent = new Intent(Books.this,ReadEpub.class);
+                    startActivity(intent);
+            }
+        }
+    }
+
+    public static String getDataColumn(Context context, Uri uri, String selection,
+                                       String[] selectionArgs) {
+
+        Cursor cursor = null;
+        final String column = "_data";
+        final String[] projection = {
+                column
+        };
+
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
+                    null);
+            if (cursor != null && cursor.moveToFirst()) {
+                final int column_index = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(column_index);
+            }
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+        return null;
+    }
 }

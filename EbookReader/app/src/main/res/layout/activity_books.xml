@@ -19,4 +19,13 @@
         android:id="@+id/viewpager">
     </android.support.v4.view.ViewPager>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ADD NEW BOOK"
+        android:id="@+id/button"
+        android:onClick="onClick"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true" />
+
 </RelativeLayout>

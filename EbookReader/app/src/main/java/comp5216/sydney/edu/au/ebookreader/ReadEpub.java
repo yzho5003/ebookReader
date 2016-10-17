@@ -24,6 +24,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.memetix.mst.language.Language;
 import com.memetix.mst.translate.Translate;
@@ -37,6 +38,8 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -451,10 +454,19 @@ public class ReadEpub extends AppCompatActivity {
 
         Book book=null;
         try {
-            AssetManager assetManager = getAssets();
-            //InputStream epubInputStream = assetManager.open("CinderSilly_Empowered_Princess_2014.epub");
-            InputStream epubInputStream = assetManager.open("The_Tenant_of_Wildfell_Hall-Anne_Bronte.epub");
-            book = (new EpubReader()).readEpub(epubInputStream);
+            if(Books.path == null) {
+                AssetManager assetManager = getAssets();
+                //InputStream epubInputStream = assetManager.open("CinderSilly_Empowered_Princess_2014.epub");
+                InputStream epubInputStream = assetManager.open("The_Tenant_of_Wildfell_Hall-Anne_Bronte.epub");
+                book = (new EpubReader()).readEpub(epubInputStream);
+            }
+            else {
+                Toast.makeText(this,"new book added",Toast.LENGTH_SHORT).show();
+                File file = new File(Books.path);
+                FileInputStream fis = new FileInputStream(file);
+                book = (new EpubReader()).readEpub(fis);
+                Books.path = null;
+            }
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
